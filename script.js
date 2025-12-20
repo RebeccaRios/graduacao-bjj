@@ -54,6 +54,9 @@ form.addEventListener('submit', handleSubmit);
 // Botão do WhatsApp
 document.getElementById('whatsappBtn')?.addEventListener('click', handleWhatsAppClick);
 
+// Botão de copiar PIX
+document.getElementById('copyPixBtn')?.addEventListener('click', copiarChavePix);
+
 // Funções
 function calcularValorTotal() {
     const turma = turmaSelect.value;
@@ -523,7 +526,7 @@ function handleWhatsAppClick(e) {
     enviarParaGoogleSheets(data);
     
     // Abrir WhatsApp
-    window.open('https://api.whatsapp.com/send?phone=5521969950977', '_blank');
+    window.open('https://api.whatsapp.com/send?phone=5521969950977&text=Gostaria%20de%20confirmar%20minha%20participa%C3%A7%C3%A3o%20na%20gradua%C3%A7%C3%A3o%20da%20GCBJJ', '_blank');
     
     // Mostrar mensagem de sucesso
     mostrarMensagemSucesso();
@@ -538,3 +541,50 @@ function handleWhatsAppClick(e) {
     }, 5000);
 }
 
+
+
+// Função para copiar chave PIX
+function copiarChavePix() {
+    const pixKey = document.getElementById('pixKey').textContent.trim();
+    const feedback = document.getElementById('copyFeedback');
+    
+    // Copiar para área de transferência
+    navigator.clipboard.writeText(pixKey).then(() => {
+        // Mostrar feedback
+        feedback.style.display = 'block';
+        feedback.textContent = '✓ Copiado!';
+        feedback.style.color = '#4caf50';
+        
+        // Esconder feedback após 2 segundos
+        setTimeout(() => {
+            feedback.style.display = 'none';
+        }, 2000);
+    }).catch(err => {
+        // Fallback para navegadores mais antigos
+        const textArea = document.createElement('textarea');
+        textArea.value = pixKey;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.select();
+        
+        try {
+            document.execCommand('copy');
+            feedback.style.display = 'block';
+            feedback.textContent = '✓ Copiado!';
+            feedback.style.color = '#4caf50';
+            setTimeout(() => {
+                feedback.style.display = 'none';
+            }, 2000);
+        } catch (err) {
+            feedback.style.display = 'block';
+            feedback.textContent = '❌ Erro ao copiar';
+            feedback.style.color = '#f44336';
+            setTimeout(() => {
+                feedback.style.display = 'none';
+            }, 2000);
+        }
+        
+        document.body.removeChild(textArea);
+    });
+}
