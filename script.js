@@ -11,6 +11,9 @@ const form = document.getElementById('confirmacaoForm');
 
 // Event listeners
 turmaSelect.addEventListener('change', () => {
+    // Esconder pagamento imediatamente ao mudar turma
+    infoPagamento.style.display = 'none';
+    submitBtn.style.display = 'none';
     mostrarFluxo();
     calcularValorTotal();
 });
@@ -18,24 +21,33 @@ document.querySelectorAll('input[name="convidadoKids"]').forEach(radio => {
     radio.addEventListener('change', () => {
         toggleConvidadoSection('kids');
         calcularValorTotal();
+        validarFormularioCompleto();
     });
 });
 document.querySelectorAll('input[name="convidadoAdulto"]').forEach(radio => {
     radio.addEventListener('change', () => {
         toggleConvidadoSection('adulto');
         calcularValorTotal();
+        validarFormularioCompleto();
     });
 });
 
 document.getElementById('quantidadeConvidadosKids')?.addEventListener('input', (e) => {
     criarInputsConvidados('kids', parseInt(e.target.value) || 0);
     calcularValorTotal();
+    validarFormularioCompleto();
 });
 
 document.getElementById('quantidadeConvidadosAdulto')?.addEventListener('input', (e) => {
     criarInputsConvidados('adulto', parseInt(e.target.value) || 0);
     calcularValorTotal();
+    validarFormularioCompleto();
 });
+
+// Adicionar listeners para validar quando campos mudarem
+document.getElementById('nomeAlunoKids')?.addEventListener('input', validarFormularioCompleto);
+document.getElementById('nomeResponsavel')?.addEventListener('input', validarFormularioCompleto);
+document.getElementById('nomeAlunoAdulto')?.addEventListener('input', validarFormularioCompleto);
 
 form.addEventListener('submit', handleSubmit);
 
@@ -78,7 +90,7 @@ function calcularValorTotal() {
 function mostrarFluxo() {
     const turma = turmaSelect.value;
     
-    // Esconder todos os fluxos
+    // Esconder todos os fluxos e seção de pagamento
     fluxoKids.style.display = 'none';
     fluxoAdulto.style.display = 'none';
     infoPagamento.style.display = 'none';
@@ -116,11 +128,14 @@ function mostrarFluxo() {
         document.querySelectorAll('input[name="convidadoAdulto"]')[0].required = true;
     }
     
-    // Mostrar informações de pagamento e botão quando uma turma for selecionada
+    // Não mostrar pagamento/botões automaticamente - só quando formulário estiver completo
     if (turma) {
-        infoPagamento.style.display = 'block';
-        submitBtn.style.display = 'block';
         calcularValorTotal();
+        // Garantir que está escondido inicialmente
+        infoPagamento.style.display = 'none';
+        submitBtn.style.display = 'none';
+        // Validar após um pequeno delay para garantir que os campos foram limpos
+        setTimeout(() => validarFormularioCompleto(), 50);
     }
 }
 
@@ -148,6 +163,9 @@ function toggleConvidadoSection(tipo) {
         quantidadeInput.value = '';
         nomesContainer.innerHTML = '';
     }
+    
+    // Validar após mudança
+    setTimeout(() => validarFormularioCompleto(), 100);
 }
 
 function criarInputsConvidados(tipo, quantidade) {
@@ -168,8 +186,17 @@ function criarInputsConvidados(tipo, quantidade) {
                 <input type="text" id="convidado${tipo}${i}" name="convidado${tipoCapitalizado}${i}" required>
             `;
             container.appendChild(div);
+            
+            // Adicionar listener para validar quando nome do convidado for preenchido
+            const input = div.querySelector('input');
+            if (input) {
+                input.addEventListener('input', validarFormularioCompleto);
+            }
         }
     }
+    
+    // Validar após criar os inputs
+    setTimeout(() => validarFormularioCompleto(), 100);
 }
 
 function handleSubmit(e) {
@@ -248,6 +275,79 @@ function handleSubmit(e) {
 function mostrarMensagemSucesso() {
     form.style.display = 'none';
     document.getElementById('successMessage').style.display = 'block';
+}
+
+// Função para validar se o formulário está completo
+function validarFormularioCompleto() {
+    const turma = turmaSelect.value;
+    
+    if (!turma) {
+        infoPagamento.style.display = 'none';
+        submitBtn.style.display = 'none';
+        return;
+    }
+    
+    let isComplete = false;
+    
+    if (turma === 'kids') {
+        const nomeAluno = document.getElementById('nomeAlunoKids')?.value.trim();
+        const nomeResponsavel = document.getElementById('nomeResponsavel')?.value.trim();
+        const convidado = document.querySelector('input[name="convidadoKids"]:checked');
+        
+        if (!nomeAluno || !nomeResponsavel || !convidado) {
+            isComplete = false;
+        } else if (convidado.value === 'sim') {
+            const quantidade = parseInt(document.getElementById('quantidadeConvidadosKids')?.value || 0);
+            if (!quantidade || quantidade < 1) {
+                isComplete = false;
+            } else {
+                // Verificar se todos os nomes dos convidados estão preenchidos
+                isComplete = true;
+                for (let i = 1; i <= quantidade; i++) {
+                    const nomeConvidado = buscarNomeConvidado('kids', i);
+                    if (!nomeConvidado) {
+                        isComplete = false;
+                        break;
+                    }
+                }
+            }
+        } else {
+            isComplete = true; // Sem convidado e campos básicos preenchidos
+        }
+    } else if (turma === 'adulto') {
+        const nomeAluno = document.getElementById('nomeAlunoAdulto')?.value.trim();
+        const convidado = document.querySelector('input[name="convidadoAdulto"]:checked');
+        
+        if (!nomeAluno || !convidado) {
+            isComplete = false;
+        } else if (convidado.value === 'sim') {
+            const quantidade = parseInt(document.getElementById('quantidadeConvidadosAdulto')?.value || 0);
+            if (!quantidade || quantidade < 1) {
+                isComplete = false;
+            } else {
+                // Verificar se todos os nomes dos convidados estão preenchidos
+                isComplete = true;
+                for (let i = 1; i <= quantidade; i++) {
+                    const nomeConvidado = buscarNomeConvidado('adulto', i);
+                    if (!nomeConvidado) {
+                        isComplete = false;
+                        break;
+                    }
+                }
+            }
+        } else {
+            isComplete = true; // Sem convidado e campos básicos preenchidos
+        }
+    }
+    
+    // Mostrar/esconder seção de pagamento e botões
+    if (isComplete) {
+        infoPagamento.style.display = 'block';
+        submitBtn.style.display = 'block';
+    } else {
+        infoPagamento.style.display = 'none';
+        submitBtn.style.display = 'none';
+    }
 }
 
 // Função auxiliar para buscar nome do convidado (tenta múltiplas formas)
