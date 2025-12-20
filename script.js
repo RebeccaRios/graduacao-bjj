@@ -117,18 +117,25 @@ function mostrarFluxo() {
         document.getElementById('nomesConvidadosAdulto').innerHTML = '';
     }
     
-    // Mostrar fluxo correspondente
+    // Remover required de todos os campos primeiro
+    document.getElementById('nomeAlunoKids').required = false;
+    document.getElementById('nomeResponsavel').required = false;
+    document.getElementById('nomeAlunoAdulto').required = false;
+    document.querySelectorAll('input[name="convidadoKids"]').forEach(radio => radio.required = false);
+    document.querySelectorAll('input[name="convidadoAdulto"]').forEach(radio => radio.required = false);
+    
+    // Mostrar fluxo correspondente e adicionar required apenas nos campos visíveis
     if (turma === 'kids') {
         fluxoKids.style.display = 'block';
-        // Tornar campos obrigatórios
+        // Tornar campos obrigatórios apenas se estiverem visíveis
         document.getElementById('nomeAlunoKids').required = true;
         document.getElementById('nomeResponsavel').required = true;
-        document.querySelectorAll('input[name="convidadoKids"]')[0].required = true;
+        document.querySelectorAll('input[name="convidadoKids"]').forEach(radio => radio.required = true);
     } else if (turma === 'adulto') {
         fluxoAdulto.style.display = 'block';
-        // Tornar campos obrigatórios
+        // Tornar campos obrigatórios apenas se estiverem visíveis
         document.getElementById('nomeAlunoAdulto').required = true;
-        document.querySelectorAll('input[name="convidadoAdulto"]')[0].required = true;
+        document.querySelectorAll('input[name="convidadoAdulto"]').forEach(radio => radio.required = true);
     }
     
     // Não mostrar pagamento/botões automaticamente - só quando formulário estiver completo
@@ -214,6 +221,16 @@ function handleSubmit(e) {
         return;
     }
     
+    // Remover required de campos escondidos antes de validar
+    if (turma === 'kids') {
+        document.getElementById('nomeAlunoAdulto').required = false;
+        document.querySelectorAll('input[name="convidadoAdulto"]').forEach(radio => radio.required = false);
+    } else if (turma === 'adulto') {
+        document.getElementById('nomeAlunoKids').required = false;
+        document.getElementById('nomeResponsavel').required = false;
+        document.querySelectorAll('input[name="convidadoKids"]').forEach(radio => radio.required = false);
+    }
+    
     // Validar se o formulário está válido
     if (!form.checkValidity()) {
         form.reportValidity();
@@ -270,15 +287,20 @@ function handleSubmit(e) {
         form.reset();
         turmaSelect.value = '';
         mostrarFluxo();
-        document.getElementById('successMessage').style.display = 'none';
+        document.getElementById('successModal').style.display = 'none';
         form.style.display = 'block';
     }, 5000);
 }
 
 function mostrarMensagemSucesso() {
     form.style.display = 'none';
-    document.getElementById('successMessage').style.display = 'block';
+    document.getElementById('successModal').style.display = 'flex';
 }
+
+// Botão do WhatsApp no modal (apenas abre WhatsApp, não envia dados)
+document.getElementById('whatsappModalBtn')?.addEventListener('click', () => {
+    window.open('https://api.whatsapp.com/send?phone=5521969950977&text=Gostaria%20de%20confirmar%20minha%20participa%C3%A7%C3%A3o%20na%20gradua%C3%A7%C3%A3o%20da%20GCBJJ', '_blank');
+});
 
 // Função para validar se o formulário está completo
 function validarFormularioCompleto() {
@@ -536,7 +558,7 @@ function handleWhatsAppClick(e) {
         form.reset();
         turmaSelect.value = '';
         mostrarFluxo();
-        document.getElementById('successMessage').style.display = 'none';
+        document.getElementById('successModal').style.display = 'none';
         form.style.display = 'block';
     }, 5000);
 }

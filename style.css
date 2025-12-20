@@ -420,6 +420,60 @@ select:focus {
     font-size: 1.05em;
 }
 
+/* Modal de Sucesso */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.modal-content {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: slideUp 0.5s ease-out;
+    border: 3px solid #FFD700;
+}
+
+.modal-content h2 {
+    color: #1a1a1a;
+    font-size: 2em;
+    margin-bottom: 15px;
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.modal-content p {
+    color: #555;
+    font-size: 1.1em;
+    margin-bottom: 10px;
+}
+
+.modal-instruction {
+    color: #333;
+    font-weight: 600;
+    margin: 20px 0 !important;
+    font-size: 1.15em !important;
+}
+
+.modal-content .whatsapp-link {
+    margin-top: 25px;
+}
+
 .convidado-input-group {
     margin-bottom: 15px;
     animation: slideIn 0.3s ease-out;
